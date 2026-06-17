@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HubSpot Rep Dashboard - CloudFuze</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">CF</div>
+        <div class="brand-text">
+          <h1>Rep Dashboard</h1>
+          <p>SMB Team &middot; 21 lead sources &middot; calls, emails, connected, opportunities</p>
+        </div>
+      </div>
+      <div class="topbar-meta" id="cacheMeta">No data yet.</div>
+    </div>
+    <div class="topbar-accent"></div>
+  </header>
+
+  <main class="container">
+
+    <!-- View tabs -->
+    <section class="view-tabs">
+      <button class="view-tab active" data-view="current" type="button">
+        <span class="tab-title">Current</span>
+        <span class="tab-sub">Lead Source &isin; 20 sources</span>
+      </button>
+      <button class="view-tab" data-view="old_outbound" type="button">
+        <span class="tab-title">Old Outbound</span>
+        <span class="tab-sub">Lead Source &notin; 21 sources &middot; created before Jan 1, <span id="ooYear">2026</span></span>
+      </button>
+      <button class="view-tab" data-view="all_outbound" type="button">
+        <span class="tab-title">All Outbound</span>
+        <span class="tab-sub">Current + Old Outbound combined</span>
+      </button>
+    </section>
+
+    <!-- Filter pills (auto-updates per active view) -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Filters applied</h2>
+      </div>
+      <div class="pill-row">
+        <span class="pill pill-blue">HubSpot Team = SMB Team</span>
+        <span class="pill pill-green" id="leadSourcePill">Lead Source &isin; 20 sources</span>
+        <button class="pill-btn" id="showSourcesBtn" type="button">Show sources</button>
+      </div>
+      <div id="sourceList" class="source-list hidden"></div>
+    </section>
+
+    <!-- Controls -->
+    <section class="card">
+      <div class="controls">
+        <div class="field">
+          <label for="fromPicker">FROM</label>
+          <input type="date" id="fromPicker" />
+        </div>
+        <div class="field">
+          <label for="toPicker">TO</label>
+          <input type="date" id="toPicker" />
+        </div>
+        <div class="field field-buttons">
+          <button class="btn btn-ghost" id="clearDateBtn" type="button">Clear range</button>
+          <button class="btn btn-primary" id="refreshBtn" type="button">Refresh data</button>
+        </div>
+      </div>
+      <div class="preset-row">
+        <span class="preset-label">QUICK RANGES</span>
+        <button class="chip" data-preset="today" type="button">Today</button>
+        <button class="chip" data-preset="yesterday" type="button">Yesterday</button>
+        <button class="chip" data-preset="last7" type="button">Last 7 days</button>
+        <button class="chip" data-preset="last14" type="button">Last 14 days</button>
+        <button class="chip" data-preset="thismonth" type="button">This month</button>
+        <button class="chip" data-preset="lastmonth" type="button">Last month</button>
+      </div>
+      <p class="hint">
+        With no range: shows all-time totals.
+        With a range picked: <strong>Calls</strong>, <strong>Emails</strong>,
+        <strong>Connected</strong>, and <strong>Opportunities</strong> are limited
+        to activity in that range. <strong>Contacts</strong> always shows the rep's full
+        qualifying pool.
+      </p>
+      <div id="statusBar" class="status-bar"></div>
+    </section>
+
+    <!-- KPI tiles -->
+    <section class="kpi-grid" id="kpiGrid">
+      <div class="kpi">
+        <span class="kpi-label">Contacts</span>
+        <span class="kpi-value" data-kpi="contacts">-</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Calls</span>
+        <span class="kpi-value" data-kpi="calls">-</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Emails</span>
+        <span class="kpi-value" data-kpi="emails">-</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Connected</span>
+        <span class="kpi-value" data-kpi="connected">-</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Opportunities</span>
+        <span class="kpi-value" data-kpi="opportunities">-</span>
+      </div>
+    </section>
+
+    <!-- Per-rep table -->
+    <section class="card">
+      <div class="card-head">
+        <h2>Per-rep breakdown</h2>
+        <span class="muted" id="rowMeta"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="repTable">
+          <thead>
+            <tr>
+              <th data-col="rep" class="left">Rep</th>
+              <th data-col="contacts">Contacts</th>
+              <th data-col="calls">Calls</th>
+              <th data-col="emails">Emails</th>
+              <th data-col="connected">Connected</th>
+              <th data-col="opportunities">Opportunities</th>
+              <th class="left">Action</th>
+            </tr>
+          </thead>
+          <tbody id="repTbody">
+            <tr><td colspan="7" class="empty">Click <strong>Refresh data</strong> to pull from HubSpot.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- See opportunities button -->
+    <section class="card centered">
+      <button class="btn btn-success btn-large" id="seeOppsBtn" type="button" disabled>
+        See opportunities
+      </button>
+      <p class="hint">
+        Opens a panel listing every deal created from the qualifying contacts.
+        Respects the date filter if one is set.
+      </p>
+    </section>
+
+    <footer class="footer">
+      <span>CloudFuze &middot; Local tool &middot; <a href="https://app.hubspot.com" target="_blank" rel="noopener">Open HubSpot</a></span>
+    </footer>
+  </main>
+
+  <!-- Opportunities side panel -->
+  <aside class="drawer hidden" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">Opportunities</h2>
+      <button class="icon-btn" id="closeDrawerBtn" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body">
+      <p class="muted" id="drawerMeta"></p>
+      <div class="table-wrap">
+        <table class="data-table compact">
+          <thead>
+            <tr>
+              <th class="left">Deal</th>
+              <th class="left">Rep</th>
+              <th class="left">Lead source</th>
+              <th>Amount</th>
+              <th class="left">Stage</th>
+              <th class="left">Close</th>
+              <th class="left">Created</th>
+            </tr>
+          </thead>
+          <tbody id="dealsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </aside>
+  <div class="backdrop hidden" id="backdrop"></div>
+
+  <!-- Loading overlay -->
+  <div class="overlay hidden" id="overlay">
+    <div class="overlay-card">
+      <div class="spinner"></div>
+      <div class="overlay-text" id="overlayText">Working ...</div>
+      <div class="overlay-sub" id="overlaySub"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

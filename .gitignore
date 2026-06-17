@@ -1,0 +1,33 @@
+# Secrets - NEVER commit
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual env
+.venv/
+venv/
+
+# PyInstaller build artifacts (don't commit the .exe binary)
+build/
+dist/
+*.spec
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Caches
+.cache/
+.pytest_cache/
+*.egg-info/

@@ -1,0 +1,30 @@
+# Render.com service definition.
+# https://render.com/docs/blueprint-spec
+#
+# After connecting your GitHub repo to Render, this file makes the service
+# auto-configure itself. You still set the secret env vars (HUBSPOT_TOKEN,
+# APP_PASSWORD) in the Render dashboard - never commit them.
+
+services:
+  - type: web
+    name: rep-dashboard
+    runtime: python
+    region: oregon         # change if you want EU/Singapore
+    plan: free             # bump to "starter" ($7/mo) if free tier sleep is annoying
+    buildCommand: pip install -r requirements.txt gunicorn
+    # One worker, multiple threads: keeps the in-memory cache consistent across
+    # all teammates and lets long requests (the manual Refresh) run for up to
+    # 15 minutes without being killed.
+    startCommand: gunicorn --workers 1 --threads 8 --timeout 900 --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: WARMUP_ON_STARTUP
+        value: "true"
+      - key: APP_USERNAME
+        value: team
+      - key: HUBSPOT_TOKEN
+        sync: false         # set this in the Render dashboard
+      - key: APP_PASSWORD
+        sync: false         # set this in the Render dashboard
