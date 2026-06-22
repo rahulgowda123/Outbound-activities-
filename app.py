@@ -299,7 +299,7 @@ def batch_associations(from_type: str, to_type: str, ids: list[str], progress=No
 
     result: dict[str, list[str]] = defaultdict(list)
     done = 0
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=6) as ex:
         for data in ex.map(fetch_chunk, chunks):
             done += 1
             for row in data.get("results", []):
@@ -323,7 +323,7 @@ def batch_read(obj_type: str, ids, props: list[str], progress=None, label="") ->
 
     out: dict[str, dict] = {}
     done = 0
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=6) as ex:
         for data in ex.map(fetch_chunk, chunks):
             done += 1
             for r in data.get("results", []):

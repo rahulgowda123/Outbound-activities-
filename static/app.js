@@ -114,12 +114,29 @@ async function startRefresh() {
 }
 
 async function pollJob(jobId, onProgress) {
+  // If the server process recycles mid-fetch (Render free tier often does
+  // this), our job_id becomes "unknown". When that happens, transparently
+  // start a fresh refresh and resume polling instead of failing.
+  let restarts = 0;
   while (true) {
-    const job = await api(`/api/job/${jobId}`);
+    let job;
+    try {
+      job = await api(`/api/job/${jobId}`);
+    } catch (e) {
+      const msg = String(e.message || "").toLowerCase();
+      if (msg.includes("unknown job") && restarts < 3) {
+        restarts++;
+        if (onProgress) onProgress({status: "running", message: `Server recycled - restarting refresh (${restarts}/3) ...`});
+        await new Promise((r) => setTimeout(r, 1500));
+        jobId = await startRefresh();
+        continue;
+      }
+      throw e;
+    }
     if (onProgress) onProgress(job);
     if (job.status === "done") return job;
     if (job.status === "error") throw new Error(job.error || "Refresh failed");
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 1500));
   }
 }
 
