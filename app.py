@@ -101,7 +101,7 @@ VIEW_ALL_OUTBOUND = "all_outbound"
 PRIMARY_VIEWS = (VIEW_CURRENT, VIEW_OLD_OUTBOUND)
 VIEWS = (VIEW_CURRENT, VIEW_OLD_OUTBOUND, VIEW_ALL_OUTBOUND)
 
-# SMB Team reps (Chitradip Saha removed per request).
+# SMB Team reps. Owner IDs come from HubSpot (verified via /crm/v3/owners).
 REPS: list[tuple[str, str]] = [
     ("Vicky Cariappa", "1666358904"),
     ("Yogesh Vig", "81629252"),
@@ -110,6 +110,9 @@ REPS: list[tuple[str, str]] = [
     ("Aparajit Jha", "91950110"),
     ("Divyansh Singh", "91643713"),
     ("Lennis Brown", "89333902"),
+    ("Seth Sutheerth", "92420684"),
+    ("Anna Singh", "93308498"),
+    ("Raunac John", "93301035"),
 ]
 REP_NAME_BY_OWNER = {oid: name for name, oid in REPS}
 SMB_OWNER_IDS = set(REP_NAME_BY_OWNER.keys())
