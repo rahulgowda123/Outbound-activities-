@@ -64,11 +64,19 @@ BASE = "https://api.hubapi.com"
 
 SMB_TEAM_ID = "43195955"
 
-# 20 lead sources for the Current view ("Sales extension" excluded per request).
+# Lead sources for the Current view, using HubSpot's INTERNAL property
+# values (not the human-readable labels shown in the HubSpot UI).
+# Three of these have different label-vs-value mappings:
+#   label "Inbound Call"        -> internal value "Inbound"
+#   label "Mailchimp Campaign"  -> internal value "Mail chimp"
+#   label "Apollo & Clay"       -> internal value "Apollo"
+# "Sales extension" excluded per user; "Marketplace Lead" doesn't exist in
+# the HubSpot lead_source enum at all (verified via /crm/v3/properties),
+# so it's been dropped. 19 active sources.
 LEAD_SOURCE_VALUES = [
     "Contact",
     "Cold Call",
-    "Inbound Call",
+    "Inbound",
     "0365-2022",
     "M365 conference leads 2023",
     "Outbound SDR",
@@ -79,14 +87,21 @@ LEAD_SOURCE_VALUES = [
     "other",
     "Google NXT 2025",
     "MO365 2025",
-    "Mailchimp Campaign",
+    "Mail chimp",
     "Outbound Email",
     "CF Manage Zoominfo",
-    "Apollo & Clay",
-    "Marketplace Lead",
+    "Apollo",
     "M365-Con 2026",
     "Google Cloud Next2026",
 ]
+
+# Friendly labels for display (maps internal value -> what HubSpot UI shows).
+# Anything not in this dict displays as-is.
+LEAD_SOURCE_LABELS = {
+    "Inbound": "Inbound Call",
+    "Mail chimp": "Mailchimp Campaign",
+    "Apollo": "Apollo & Clay",
+}
 
 # Old Outbound view = SMB Team contacts whose lead_source is NONE of the 20
 # above AND not "Sales extension" - so Sales extension contacts are excluded
@@ -689,6 +704,7 @@ def api_status():
             "has_token": bool(HUBSPOT_TOKEN),
             "views": views_info,
             "lead_sources": LEAD_SOURCE_VALUES,
+            "lead_source_labels": LEAD_SOURCE_LABELS,
             "lead_sources_exclude": LEAD_SOURCE_EXCLUDE,
             "smb_team_id": SMB_TEAM_ID,
             "reps": [{"name": n, "owner_id": o} for n, o in REPS],

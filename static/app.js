@@ -12,8 +12,13 @@ const state = {
   cacheReadyByView: { current: false, old_outbound: false, all_outbound: false },
   reps: [],
   leadSources: [],
+  leadSourceLabels: {},   // internal value -> human label (from /api/status)
   activePreset: null,
 };
+
+function sourceLabel(value) {
+  return (state.leadSourceLabels && state.leadSourceLabels[value]) || value;
+}
 
 // ---------- DOM refs ----------
 const $ = (sel) => document.querySelector(sel);
@@ -293,7 +298,11 @@ function renderRows() {
 }
 
 function renderSources(sources) {
-  sourceList.innerHTML = sources.map((s) => `<span class="src">${s}</span>`).join("");
+  sourceList.innerHTML = sources.map((s) => {
+    const label = sourceLabel(s);
+    const same = label === s;
+    return `<span class="src" title="HubSpot value: ${escapeHtml(s)}">${escapeHtml(label)}${same ? "" : ' <small style="color:var(--muted)">(' + escapeHtml(s) + ')</small>'}</span>`;
+  }).join("");
 }
 
 // ---------- Drawer (Opportunities) ----------
@@ -372,7 +381,7 @@ function escapeHtml(s) {
 function renderLeadSourceChips(src) {
   if (!src) return '<span class="muted">-</span>';
   return src.split(",").map((s) => s.trim()).filter(Boolean)
-    .map((s) => `<span class="pill pill-blue ls-chip">${escapeHtml(s)}</span>`)
+    .map((s) => `<span class="pill pill-blue ls-chip" title="HubSpot value: ${escapeHtml(s)}">${escapeHtml(sourceLabel(s))}</span>`)
     .join(" ");
 }
 
@@ -516,14 +525,15 @@ function updateLeadSourcePill() {
   const pill = document.getElementById("leadSourcePill");
   if (!pill) return;
   const year = new Date().getFullYear();
+  const inCount = state.leadSources.length;          // 19
+  const exCount = inCount + 1;                       // 20 (with Sales extension)
   if (state.view === "old_outbound") {
-    pill.innerHTML = `Lead Source &notin; 21 sources &middot; createdate &lt; Jan 1, ${year}`;
+    pill.innerHTML = `Lead Source &notin; ${exCount} sources &middot; createdate &lt; Jan 1, ${year}`;
   } else if (state.view === "all_outbound") {
-    pill.innerHTML = `(Current &cup; Old Outbound) &middot; ${state.leadSources.length} sources + pre-${year} legacy`;
+    pill.innerHTML = `(Current &cup; Old Outbound) &middot; ${inCount} sources + pre-${year} legacy`;
   } else {
-    pill.innerHTML = `Lead Source &isin; ${state.leadSources.length} sources`;
+    pill.innerHTML = `Lead Source &isin; ${inCount} sources`;
   }
-  // also keep tab subtitle year in sync
   const yEl = document.getElementById("ooYear");
   if (yEl) yEl.textContent = year;
 }
@@ -535,6 +545,7 @@ function updateLeadSourcePill() {
     const s = await getStatus();
     state.reps = s.reps;
     state.leadSources = s.lead_sources;
+    state.leadSourceLabels = s.lead_source_labels || {};
     renderSources(s.lead_sources);
     updateLeadSourcePill();
     updateCacheMeta(s);
